@@ -2,6 +2,28 @@
 	die( 'Forbidden' );
 }
 
+/**
+ * Changelog ----------------------------------------------------------------
+ *
+ * 1.1.5 - Activated per-item "Settings" + baseline styling + modern icons.
+ *         The previously-empty row/column/item/default option sets are now
+ *         populated, so the long-dormant per-item "Settings" modal finally
+ *         appears and does something: dropdown width (default / full-width /
+ *         custom) plus background colour/image for the row panel, width
+ *         fraction + alignment + background for columns, a text/colour badge
+ *         for items, and an "Extra CSS Class" everywhere. The front-end
+ *         walker now reads those values and emits matching classes
+ *         (mm-col-1-3, mm-col-align-center, mega-menu-full, …) and inline
+ *         styles. Ships an opt-out baseline stylesheet (static/css/frontend.css)
+ *         so columns, the dropdown panel and a mobile accordion work without
+ *         theme CSS - toggle it with the
+ *         'fw:ext:megamenu:enqueue-frontend-css' filter. The link icon picker
+ *         now defaults to the framework's modern multi-pack "icon-v2" type
+ *         (Font Awesome 6); revert with the 'fw:ext:megamenu:icon-option'
+ *         filter. Hardening: the item-values AJAX endpoint now verifies a
+ *         nonce.
+ */
+
 $manifest = array();
 
 $manifest['name']        = __( 'Mega Menu', 'fw' );
@@ -11,7 +33,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.1.4';
+$manifest['version']     = '1.1.5';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 

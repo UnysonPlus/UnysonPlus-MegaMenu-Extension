@@ -22,6 +22,26 @@ class FW_Extension_Megamenu extends FW_Extension
 	}
 
 	/**
+	 * The option used for the per-item link icon picker.
+	 *
+	 * Defaults to the framework's modern multi-pack picker ('icon-v2', Font Awesome 6
+	 * and others). Filter 'fw:ext:megamenu:icon-option' to revert to the legacy 'icon'
+	 * (Font Awesome 4) type or to plug in a custom icon option type.
+	 *
+	 * Shared by the admin enqueue (picker) and static.php (front-end font) so both
+	 * always agree on the type.
+	 *
+	 * @return array
+	 */
+	public function get_icon_option()
+	{
+		return apply_filters('fw:ext:megamenu:icon-option', array(
+			'type'  => 'icon-v2',
+			'label' => __('Select Icon', 'fw'),
+		));
+	}
+
+	/**
 	 * @internal
 	 */
 	public function _init() {
@@ -67,10 +87,7 @@ class FW_Extension_Megamenu extends FW_Extension
 			}
 		}
 
-		$icon_option = apply_filters('fw:ext:megamenu:icon-option', array(
-			'type' => 'icon',
-			'label' => __('Select Icon', 'fw'),
-		));
+		$icon_option = $this->get_icon_option();
 		fw()->backend->option_type($icon_option['type'])->enqueue_static();
 
 		wp_localize_script(
@@ -80,6 +97,7 @@ class FW_Extension_Megamenu extends FW_Extension
 				'l10n' => array(
 					'item_options_btn' => apply_filters('fw:ext:megamenu:label:item-options-btn', __('Settings', 'fw')),
 				),
+				'nonce' => wp_create_nonce('fw_ext_megamenu'),
 				'icon_option' => $icon_option,
 				'options' => $items_options,
 				'item_options_modal_sizes' => $items_options_modal_sizes,
@@ -186,12 +204,14 @@ class FW_Extension_Megamenu extends FW_Extension
 	}
 
 	public function _action_ajax_item_values() {
+		check_ajax_referer('fw_ext_megamenu', '_ajax_nonce');
+
 		if (!current_user_can('manage_options')) {
 			wp_send_json_error();
 		}
 
 		wp_send_json_success(array(
-			'values' => fw_ext_mega_menu_get_db_item_option(intval($_POST['id']))
+			'values' => fw_ext_mega_menu_get_db_item_option(intval(FW_Request::POST('id')))
 		));
 	}
 }

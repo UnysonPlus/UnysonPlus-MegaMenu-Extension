@@ -77,6 +77,37 @@ function _filter_fw_ext_mega_menu_wp_nav_menu_objects($sorted_menu_items, $args)
 		if (fw_ext_mega_menu_get_meta($item, 'icon')) {
 			$item->classes[] = 'menu-item-has-icon';
 		}
+
+		// Per-item "Settings" options: width/alignment/extra classes.
+		// Levels: 1 = row, 2 = column, 3+ = item, 0 = default (non-MegaMenu).
+		$extra_class = '';
+		switch (fw_ext_mega_menu_is_mm_item($item)) {
+			case 2: // column
+				$width = (string) fw_ext_mega_menu_get_item_option($item, 'column', 'width', 'auto');
+				$item->classes[] = 'mm-col-' . str_replace('/', '-', $width);
+
+				if ($align = fw_ext_mega_menu_get_item_option($item, 'column', 'align', '')) {
+					$item->classes[] = 'mm-col-align-' . sanitize_html_class($align);
+				}
+
+				$extra_class = (string) fw_ext_mega_menu_get_item_option($item, 'column', 'extra_class', '');
+				break;
+			case 1: // row: extra class goes on the .mega-menu container, not the <li>
+				break;
+			case 0: // default (non-MegaMenu) item
+				$extra_class = (string) fw_ext_mega_menu_get_item_option($item, 'default', 'extra_class', '');
+				break;
+			default: // 3+ item
+				$extra_class = (string) fw_ext_mega_menu_get_item_option($item, 'item', 'extra_class', '');
+		}
+
+		if ($extra_class !== '') {
+			foreach (preg_split('/\s+/', trim($extra_class)) as $cls) {
+				if ($cls !== '') {
+					$item->classes[] = sanitize_html_class($cls);
+				}
+			}
+		}
 	}
 
 	return $sorted_menu_items;

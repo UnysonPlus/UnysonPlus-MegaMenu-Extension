@@ -194,7 +194,7 @@ class FW_Ext_Mega_Menu_Admin_Walker extends Walker_Nav_Menu /* Walker_Nav_Menu_E
 						</a>&nbsp;
 						<span data-action="mega-menu-pick-icon" class="mega-menu-icon-frame hide-if-empty" style="position: relative;">
 							<i class="mega-menu-icon-i"></i>
-							<a href="#" class="mega-menu-icon-remove dashicons fw-x" data-action="mega-menu-remove-icon" title="<?php esc_attr_e('Remove Icon', 'fw') ?>"></a>
+							<a href="#" class="mega-menu-icon-remove dashicons fw-x" data-action="mega-menu-remove-icon" title="<?php esc_attr_e('Remove Icon', 'fw') ?>" aria-label="<?php esc_attr_e('Remove Icon', 'fw') ?>"></a>
 						</span>
 						<span class="mega-menu-icon-frame inline-if-empty" data-action="mega-menu-pick-icon"><i class="fa fa-lg fa-eye" style="position: relative; top: -1px;"></i></span>
 						<input type="hidden" name="<?php echo _fw_ext_mega_menu_admin_input_name($item, 'icon') ?>" value="<?php echo esc_attr(fw_ext_mega_menu_get_meta($item, 'icon')) ?>" data-subject="mega-menu-icon-input" />

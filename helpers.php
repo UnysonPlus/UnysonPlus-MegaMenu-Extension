@@ -15,6 +15,59 @@ function fw_ext_mega_menu_update_meta($post, array $array) {
 }
 
 /**
+ * Read a single per-item option value (defined in options/{row,column,item,default}.php)
+ * saved through the "Settings" modal (FW_Db_Options_Model_MegaMenu).
+ *
+ * @param int|WP_Post $item
+ * @param string $type       One of 'row' | 'column' | 'item' | 'default'
+ * @param string|null $option_id Leaf option id, or null for the whole type group
+ * @param mixed $default
+ * @return mixed
+ */
+function fw_ext_mega_menu_get_item_option($item, $type, $option_id = null, $default = null) {
+	$id = is_object($item) ? $item->ID : intval($item);
+
+	if (!$id || !function_exists('fw_ext_mega_menu_get_db_item_option')) {
+		return $default;
+	}
+
+	$key = $type . ($option_id !== null ? '/' . $option_id : '');
+
+	return fw_ext_mega_menu_get_db_item_option($id, $key, $default);
+}
+
+/**
+ * Build the inline style string for a MegaMenu row (dropdown panel) container.
+ *
+ * @param int $row_id Top-level MegaMenu item id
+ * @return string Escaped CSS, or '' when nothing to apply
+ */
+function fw_ext_mega_menu_row_container_style($row_id) {
+	$css = array();
+
+	if (fw_ext_mega_menu_get_item_option($row_id, 'row', 'dropdown_width', 'default') === 'custom') {
+		$custom = trim((string) fw_ext_mega_menu_get_item_option($row_id, 'row', 'dropdown_custom_width', ''));
+		if ($custom !== '') {
+			$css[] = 'width:' . esc_attr($custom);
+		}
+	}
+
+	if ($bg_color = fw_ext_mega_menu_get_item_option($row_id, 'row', 'bg_color', '')) {
+		$css[] = 'background-color:' . esc_attr($bg_color);
+	}
+
+	$bg_image = fw_ext_mega_menu_get_item_option($row_id, 'row', 'bg_image', '');
+	$bg_url   = is_array($bg_image) ? (isset($bg_image['url']) ? $bg_image['url'] : '') : $bg_image;
+	if ($bg_url) {
+		$css[] = 'background-image:url(' . esc_url($bg_url) . ')';
+		$css[] = 'background-position:' . esc_attr(fw_ext_mega_menu_get_item_option($row_id, 'row', 'bg_position', 'center center'));
+		$css[] = 'background-repeat:' . esc_attr(fw_ext_mega_menu_get_item_option($row_id, 'row', 'bg_repeat', 'no-repeat'));
+	}
+
+	return implode(';', $css);
+}
+
+/**
  * Check if menu item is a MegaMenu item or is inside a MegaMenu item
  * @param WP_Post $item
  * @return bool

@@ -1,0 +1,191 @@
+/**
+ * Mega Menu — baseline front-end layout.
+ *
+ * This is an opt-out baseline so the mega menu works without theme CSS.
+ * Disable it with: add_filter('fw:ext:megamenu:enqueue-frontend-css', '__return_false');
+ *
+ * It targets the markup produced by FW_Ext_Mega_Menu_Walker:
+ *   li.menu-item-has-mega-menu > div.mega-menu > ul.mega-menu-row > li.mega-menu-col
+ */
+
+/* The top-level item that owns a mega menu panel */
+.menu-item-has-mega-menu {
+	position: relative;
+}
+
+/* Dropdown panel */
+.menu-item-has-mega-menu > .mega-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	min-width: 240px;
+	padding: 16px;
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(6px);
+	transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+}
+
+/* Open on hover or keyboard focus */
+.menu-item-has-mega-menu:hover > .mega-menu,
+.menu-item-has-mega-menu:focus-within > .mega-menu,
+.menu-item-has-mega-menu.is-open > .mega-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+	transition-delay: 0s;
+}
+
+/* Full-width (viewport) panel */
+.menu-item-has-mega-menu > .mega-menu.mega-menu-full {
+	position: fixed;
+	left: 0;
+	right: 0;
+	width: 100%;
+}
+
+/* A row of columns */
+.mega-menu .mega-menu-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mega-menu .mega-menu-row + .mega-menu-row {
+	margin-top: 16px;
+}
+
+/* Columns */
+.mega-menu .mega-menu-col {
+	flex: 1 1 0;
+	min-width: 0;
+	list-style: none;
+}
+
+.mega-menu .mega-menu-col > .sub-menu {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Column width presets (mm-col-<width> from the "Settings" modal) */
+.mega-menu .mega-menu-col.mm-col-1-2 { flex: 0 0 calc(50%  - 12px); max-width: calc(50%  - 12px); }
+.mega-menu .mega-menu-col.mm-col-1-3 { flex: 0 0 calc(33.333% - 16px); max-width: calc(33.333% - 16px); }
+.mega-menu .mega-menu-col.mm-col-2-3 { flex: 0 0 calc(66.666% - 8px);  max-width: calc(66.666% - 8px); }
+.mega-menu .mega-menu-col.mm-col-1-4 { flex: 0 0 calc(25%   - 18px); max-width: calc(25%   - 18px); }
+.mega-menu .mega-menu-col.mm-col-3-4 { flex: 0 0 calc(75%   - 6px);  max-width: calc(75%   - 6px); }
+.mega-menu .mega-menu-col.mm-col-1-5 { flex: 0 0 calc(20%   - 20px); max-width: calc(20%   - 20px); }
+.mega-menu .mega-menu-col.mm-col-1-6 { flex: 0 0 calc(16.666% - 20px); max-width: calc(16.666% - 20px); }
+
+/* Column alignment */
+.mega-menu .mega-menu-col.mm-col-align-left   { text-align: left; }
+.mega-menu .mega-menu-col.mm-col-align-center { text-align: center; }
+.mega-menu .mega-menu-col.mm-col-align-right  { text-align: right; }
+
+/* Icon spacing when a sub-menu has icons */
+.sub-menu-has-icons .menu-item-has-icon > a [class^="fa-"],
+.sub-menu-has-icons .menu-item-has-icon > a [class*=" fa-"],
+.sub-menu-has-icons .menu-item-has-icon > a > .fa {
+	margin-right: 8px;
+}
+
+/* Item badge */
+.mega-menu-badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 7px;
+	font-size: 11px;
+	line-height: 1.6;
+	font-weight: 600;
+	color: #fff;
+	background: #e02b51;
+	border-radius: 999px;
+	vertical-align: middle;
+}
+
+/* Mobile toggle button (hidden on desktop, hover drives the panel there) */
+.mega-menu-toggle {
+	display: none;
+	box-sizing: border-box;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	vertical-align: middle;
+}
+
+.mega-menu-toggle > span {
+	display: inline-block;
+	width: 9px;
+	height: 9px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	transform-origin: center;
+	transition: transform 0.18s ease;
+}
+
+.menu-item-has-mega-menu.is-open > .mega-menu-toggle > span {
+	transform: rotate(-135deg);
+}
+
+/* Mobile: stack columns and switch the panel in-flow (toggle via .is-open) */
+@media (max-width: 782px) {
+	.mega-menu-toggle {
+		display: inline-block;
+	}
+
+	.menu-item-has-mega-menu > .mega-menu {
+		position: static;
+		width: auto;
+		min-width: 0;
+		box-shadow: none;
+		border: 0;
+		padding: 8px 0 8px 16px;
+		opacity: 1;
+		visibility: hidden;
+		transform: none;
+		display: none;
+	}
+
+	.menu-item-has-mega-menu.is-open > .mega-menu {
+		display: block;
+		visibility: visible;
+	}
+
+	/* Hover should not open on touch screens; rely on .is-open instead */
+	.menu-item-has-mega-menu:hover > .mega-menu {
+		display: none;
+	}
+
+	.menu-item-has-mega-menu.is-open:hover > .mega-menu {
+		display: block;
+	}
+
+	.mega-menu .mega-menu-row {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.mega-menu .mega-menu-col,
+	.mega-menu .mega-menu-col[class*="mm-col-"] {
+		flex: 1 1 100%;
+		max-width: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.menu-item-has-mega-menu > .mega-menu,
+	.mega-menu-toggle > span {
+		transition: none;
+	}
+}

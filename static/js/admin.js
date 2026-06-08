@@ -6,9 +6,7 @@ jQuery(function ($) {
 	(function () {
 
 		var container = '#menu-to-edit';
-		var selector = jQuery('body.branch-4-0, body.branch-4-1, body.branch-4-2, body.branch-4-3').length
-			? '#icon-hide' // WP <= 4.3
-			: '.hide-column-tog[name="icon-hide"]'; // WP 4.4+
+		var selector = '.hide-column-tog[name="icon-hide"]'; // WP 4.4+
 
 		$(document).on('change', selector, function () {
 			$(container).toggleClass('screen-options-icon', $(this).is(':checked'));
@@ -74,7 +72,7 @@ jQuery(function ($) {
 		$(document).on('change', selector, function (event) {
 			var field = $(this).closest('.field-mega-menu-icon');
 			var value = $(this).val();
-			field.toggleClass('empty', value == '');
+			field.toggleClass('empty', value === '');
 			field.find('.mega-menu-icon-i').attr('class', 'mega-menu-icon-i ' + value);
 		});
 		$(selector).trigger('change');
@@ -102,7 +100,11 @@ jQuery(function ($) {
 					// leave as it is
 					break;
 				case 'icon-v2':
-					icon = JSON.parse(icon)['icon-class'];
+					try {
+						icon = JSON.parse(icon)['icon-class'];
+					} catch (e) {
+						icon = '';
+					}
 					break;
 				default:
 					var eventData = {
@@ -291,6 +293,7 @@ jQuery(function ($) {
 				if (!$button.length) {
 					$button = $('<button type="button" disabled="disabled" class="button fw-megamenu-stngs"></button>');
 					$button.text(localized.l10n.item_options_btn);
+					$button.attr('aria-label', localized.l10n.item_options_btn);
 
 					$item.find('.field-mega-menu-icon:first').append($button);
 				}
@@ -310,6 +313,7 @@ jQuery(function ($) {
 						dataType: 'json',
 						data: {
 							action: 'fw_ext_megamenu_item_values',
+							_ajax_nonce: localized.nonce,
 							id: id
 						}
 					}).done(function (r) {
@@ -337,7 +341,8 @@ jQuery(function ($) {
 				}
 			},
 			extractItemDepth: function($item){
-				return parseInt($item.attr('class').match(/ ?menu-item-depth-(\d+) ?/)[1]);
+				var match = String($item.attr('class')).match(/ ?menu-item-depth-(\d+) ?/);
+				return match ? parseInt(match[1], 10) : 0;
 			},
 			updateItemsTreeUi: function ($item) {
 				var itemDepth = inst.extractItemDepth($item);

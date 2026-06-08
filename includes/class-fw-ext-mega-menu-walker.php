@@ -49,7 +49,15 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 		$id = apply_filters( 'nav_menu_item_id', 'menu-item-'. $item->ID, $item, $args, $depth );
 		$id = $id ? ' id="' . esc_attr( $id ) . '"' : '';
 
-		$output .= $indent . '<li' . $id . $class_names .'>';
+		// Column background color (per-item "Settings" option)
+		$mm_style = '';
+		if (fw_ext_mega_menu_is_mm_item($item) == 2) {
+			if ($bg = fw_ext_mega_menu_get_item_option($item, 'column', 'bg_color', '')) {
+				$mm_style = ' style="background-color:' . esc_attr($bg) . '"';
+			}
+		}
+
+		$output .= $indent . '<li' . $id . $class_names . $mm_style . '>';
 
 		$atts = array();
 		$atts['title']  = ! empty( $item->attr_title ) ? $item->attr_title : '';
@@ -153,9 +161,20 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 					$newlevel = true;
 # BEGIN - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 					if (!isset($mega_menu_container) && $depth == 0 && fw_ext_mega_menu_get_meta($id, 'enabled')) {
+						// Per-item "Settings" options for the row (dropdown panel)
+						$mm_row_class = 'mega-menu';
+						if (fw_ext_mega_menu_get_item_option($id, 'row', 'dropdown_width', 'default') === 'full-width') {
+							$mm_row_class .= ' mega-menu-full';
+						}
+						if ($mm_row_extra = fw_ext_mega_menu_get_item_option($id, 'row', 'extra_class', '')) {
+							$mm_row_class .= ' ' . esc_attr($mm_row_extra);
+						}
 						$mega_menu_container = apply_filters('fw_ext_mega_menu_container', array(
 							'tag'  => 'div',
-							'attr' => array( 'class' => 'mega-menu' )
+							'attr' => array_filter(array(
+								'class' => $mm_row_class,
+								'style' => fw_ext_mega_menu_row_container_style($id),
+							))
 						), array(
 							'element' => $element,
 							'children_elements' => $children_elements,
