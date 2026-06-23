@@ -72,5 +72,28 @@
 				}
 			});
 		});
+
+		// Desktop: a full-width (position:fixed) panel needs its `top` set to the trigger's
+		// bottom edge so it appears right under the menu bar, for any header height/theme.
+		var fullParents = Array.prototype.filter.call(parents, function (p) {
+			var panel = p.querySelector('.mega-menu.mega-menu-full');
+			return panel && panel.parentNode === p;
+		});
+		if (fullParents.length) {
+			var FULL_PANEL_OFFSET = 11; // px the full-width panel rides up under the header
+			var placeFull = function (p) {
+				var panel = p.querySelector('.mega-menu.mega-menu-full');
+				if (panel && panel.parentNode === p) {
+					panel.style.top = Math.round(p.getBoundingClientRect().bottom) - FULL_PANEL_OFFSET + 'px';
+				}
+			};
+			fullParents.forEach(function (p) {
+				p.addEventListener('mouseenter', function () { placeFull(p); });
+				p.addEventListener('focusin', function () { placeFull(p); });
+				placeFull(p);
+			});
+			window.addEventListener('resize', function () { fullParents.forEach(placeFull); });
+			window.addEventListener('scroll', function () { fullParents.forEach(placeFull); }, { passive: true });
+		}
 	});
 })();

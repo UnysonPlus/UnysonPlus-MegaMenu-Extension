@@ -20,6 +20,7 @@
 	left: 0;
 	z-index: 1000;
 	min-width: 240px;
+	max-width: calc(100vw - 24px);
 	padding: 16px;
 	background: #fff;
 	border: 1px solid rgba(0, 0, 0, 0.08);
@@ -28,6 +29,17 @@
 	visibility: hidden;
 	transform: translateY(6px);
 	transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+}
+
+/* Invisible hover bridge: keeps :hover alive while the cursor crosses the gap between the
+   trigger and the panel, so a slow downward move doesn't close the panel. */
+.menu-item-has-mega-menu > .mega-menu::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -18px;
+	height: 18px;
 }
 
 /* Open on hover or keyboard focus */
@@ -40,12 +52,25 @@
 	transition-delay: 0s;
 }
 
-/* Full-width (viewport) panel */
+/* Full-width (viewport) panel. position:fixed spans the viewport edge-to-edge; frontend.js sets
+   `top` to the trigger's bottom so it sits right under the menu bar (theme-agnostic — no hard-coded
+   header height). Side padding insets the columns; the row is capped + centred so columns don't
+   stretch on ultra-wide screens. This is what makes a real multi-column mega panel. */
 .menu-item-has-mega-menu > .mega-menu.mega-menu-full {
 	position: fixed;
+	top: auto;
 	left: 0;
 	right: 0;
 	width: 100%;
+	max-width: 100%;
+	padding-left: clamp(16px, 6vw, 96px);
+	padding-right: clamp(16px, 6vw, 96px);
+}
+
+.mega-menu.mega-menu-full > .mega-menu-row {
+	max-width: 1400px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 /* A row of columns */
@@ -62,10 +87,11 @@
 	margin-top: 16px;
 }
 
-/* Columns */
+/* Columns — keep a readable minimum width so multi-column panels wrap instead of
+   collapsing to near-zero (which made long titles overflow and overlap neighbours). */
 .mega-menu .mega-menu-col {
-	flex: 1 1 0;
-	min-width: 0;
+	flex: 1 1 170px;
+	min-width: 170px;
 	list-style: none;
 }
 
@@ -73,6 +99,14 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+
+/* Column heading — the column's own (first) link, emphasised above its items */
+.mega-menu .mega-menu-col > a {
+	display: inline-block;
+	margin-bottom: 6px;
+	font-size: 1.125rem;
+	font-weight: 700;
 }
 
 /* Column width presets (mm-col-<width> from the "Settings" modal) */
