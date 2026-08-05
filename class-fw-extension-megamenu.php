@@ -24,7 +24,7 @@ class FW_Extension_Megamenu extends FW_Extension
 	/**
 	 * The option used for the per-item link icon picker.
 	 *
-	 * Defaults to the framework's modern multi-pack picker ('icon-v2', Font Awesome 6
+	 * Defaults to the framework's modern multi-pack picker ('icon', Font Awesome 6
 	 * and others). Filter 'fw:ext:megamenu:icon-option' to revert to the legacy 'icon'
 	 * (Font Awesome 4) type or to plug in a custom icon option type.
 	 *
@@ -36,7 +36,7 @@ class FW_Extension_Megamenu extends FW_Extension
 	public function get_icon_option()
 	{
 		return apply_filters('fw:ext:megamenu:icon-option', array(
-			'type'  => 'icon-v2',
+			'type'  => 'icon',
 			'label' => __('Select Icon', 'fw'),
 		));
 	}
@@ -126,7 +126,10 @@ class FW_Extension_Megamenu extends FW_Extension
 				),
 				'title-off' => isset($meta['title-off']),
 				'new-row' => isset($meta['new-row']),
-				'icon' => isset($meta['icon']) ? (string)$meta['icon'] : '',
+				// NOTE: 'icon' is no longer saved here — the icon moved into the
+				// per-item "Settings" modal (icon-v2 option). Any legacy icon
+				// already in this meta is preserved (the merge keeps unlisted
+				// keys) and still read as a fallback by fw_ext_mega_menu_item_icon().
 			);
 
 			fw_ext_mega_menu_update_meta($menu_item_db_id, $meta);

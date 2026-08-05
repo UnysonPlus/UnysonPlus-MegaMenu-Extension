@@ -49,11 +49,11 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 		$id = apply_filters( 'nav_menu_item_id', 'menu-item-'. $item->ID, $item, $args, $depth );
 		$id = $id ? ' id="' . esc_attr( $id ) . '"' : '';
 
-		// Column background color (per-item "Settings" option)
+		// Column background (color + image) — per-item "Settings" option.
 		$mm_style = '';
 		if (fw_ext_mega_menu_is_mm_item($item) == 2) {
-			if ($bg = fw_ext_mega_menu_get_item_option($item, 'column', 'bg_color', '')) {
-				$mm_style = ' style="background-color:' . esc_attr($bg) . '"';
+			if ($col_style = fw_ext_mega_menu_column_style($item)) {
+				$mm_style = ' style="' . $col_style . '"';
 			}
 		}
 
@@ -250,7 +250,7 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 		$id_field = $this->db_fields['id'];
 		$id = $element->$id_field;
 		foreach ($children_elements[$id] as $child) {
-			if (fw_ext_mega_menu_get_meta($child, 'icon')) {
+			if (fw_ext_mega_menu_item_icon($child)) {
 				return true;
 			}
 		}
@@ -273,7 +273,7 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 
 		// scan row
 		while (true) {
-			if (fw_ext_mega_menu_get_meta($child, 'icon')) {
+			if (fw_ext_mega_menu_item_icon($child)) {
 				return true;
 			}
 			$child = next($children_elements[$row_id]);

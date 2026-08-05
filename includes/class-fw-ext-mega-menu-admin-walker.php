@@ -187,22 +187,10 @@ class FW_Ext_Mega_Menu_Admin_Walker extends Walker_Nav_Menu /* Walker_Nav_Menu_E
 <?php # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ?>
 <?php do_action( 'wp_nav_menu_item_custom_fields', $item_id, $item, $depth, $args ); // https://github.com/ThemeFuse/Unyson-MegaMenu-Extension/issues/5 ?>
 <?php # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ?>
-<?php # Icon ?>
-				<p class="field-mega-menu-icon description description-wide empty">
-					<label>
-						<?php _e('Icon', 'fw') ?><br />
-						<a href="#" class="button" data-action="mega-menu-pick-icon">
-							<span class="inline-if-empty"><?php _e('Add Icon', 'fw') ?></span>
-							<span class="hide-if-empty"><?php _e('Edit Icon', 'fw') ?></span>
-						</a>&nbsp;
-						<span data-action="mega-menu-pick-icon" class="mega-menu-icon-frame hide-if-empty" style="position: relative;">
-							<i class="mega-menu-icon-i"></i>
-							<a href="#" class="mega-menu-icon-remove dashicons fw-x" data-action="mega-menu-remove-icon" title="<?php esc_attr_e('Remove Icon', 'fw') ?>" aria-label="<?php esc_attr_e('Remove Icon', 'fw') ?>"></a>
-						</span>
-						<span class="mega-menu-icon-frame inline-if-empty" data-action="mega-menu-pick-icon"><i class="fa fa-lg fa-eye" style="position: relative; top: -1px;"></i></span>
-						<input type="hidden" name="<?php echo _fw_ext_mega_menu_admin_input_name($item, 'icon') ?>" value="<?php echo esc_attr(fw_ext_mega_menu_get_meta($item, 'icon')) ?>" data-subject="mega-menu-icon-input" />
-					</label>
-				</p>
+<?php # Icon moved into the per-item "Settings" modal (icon-v2 option), so the old
+       # standalone "Add/Edit Icon" control is gone. This empty <p> is the host
+       # the "Settings" button is injected into by admin.js. ?>
+				<p class="field-mega-menu-settings description description-wide"></p>
 <?php # Use as Mega Menu ?>
 				<p class="description description-wide show-if-menu-top">
 					<label>

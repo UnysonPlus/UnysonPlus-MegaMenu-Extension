@@ -66,151 +66,8 @@ jQuery(function ($) {
 
 	})();
 
-	// Monitor icon state and reflect it with dependent fields
-	(function (selector) {
-
-		$(document).on('change', selector, function (event) {
-			var field = $(this).closest('.field-mega-menu-icon');
-			var value = $(this).val();
-			field.toggleClass('empty', value === '');
-			field.find('.mega-menu-icon-i').attr('class', 'mega-menu-icon-i ' + value);
-		});
-		$(selector).trigger('change');
-
-	})('.field-mega-menu-icon [data-subject=mega-menu-icon-input]');
-
-	(function(){
-		var modal = new fw.OptionsModal({
-			title: localized.icon_option.label,
-			options: [{
-				icon: localized.icon_option
-			}],
-			values: {
-				icon: ''
-			},
-			size: 'small'
-		}), eventProxy = new Backbone.Model;
-
-		// Immediately close dialog after clicking on icon
-		$(modal.frame.$el).on('change', 'input[name="fw_edit_options_modal[icon]"]', function(){
-			var icon = $(this).val();
-
-			switch (localized.icon_option.type) {
-				case 'icon':
-					// leave as it is
-					break;
-				case 'icon-v2':
-					try {
-						icon = JSON.parse(icon)['icon-class'];
-					} catch (e) {
-						icon = '';
-					}
-					break;
-				default:
-					var eventData = {
-						icon: icon, // this will be changed by reference
-						icon_option: $.extend({}, localized.icon_option)
-					};
-					/** @since 1.1.2 */
-					fwEvents.trigger(
-						'fw:ext:megamenu:custom-icon-value-to-icon-class:'+ localized.icon_option.type, eventData
-					);
-					icon = eventData.icon;
-			}
-
-			modal.set('values', {
-				icon: icon
-			});
-
-			modal.frame.close();
-		});
-
-		{
-			// Resize icon list to fit entire window
-			function resizeIconList() {
-				var option = modal.frame.$el.find('#fw-backend-option-fw-edit-options-modal-icon'),
-					frame_content = option.closest('.media-frame-content'),
-					icon_list = option.find('.js-option-type-icon-list');
-
-				// get rid of bottom border
-				option.closest('.fw-row').css('border-bottom', 'none');
-
-				// resize icon list to fit entire window
-				icon_list.css('max-height', 'none').height(1000000);
-				frame_content.scrollTop(1000000);
-				icon_list.height(icon_list.height() - frame_content.scrollTop());
-			}
-
-			modal.on('change:html', resizeIconList);
-			$(window).resize(resizeIconList);
-		}
-
-		// Replace [Save] button by [Cancel]
-		$(modal.frame.$el).find('.media-toolbar-primary')
-			.html('<a href="#" class="button media-button button-large">Cancel</a>')
-			.find('a').on('click', function (event) {
-			event.preventDefault();
-			modal.frame.close();
-		});
-
-		// Add/Edit Icon Buttons
-		$(document).on('click', '[data-action=mega-menu-pick-icon]', function (event) {
-
-			event.preventDefault();
-
-			// prevent previous item event listener execution
-			eventProxy.stopListening(modal);
-
-			{
-				var icon = $(event.target).closest('.field-mega-menu-icon').find('input').val();
-
-				switch (localized.icon_option.type) {
-					case 'icon':
-						// leave as it is
-						break;
-					case 'icon-v2':
-						icon = {'type': 'icon-font', 'icon-class': icon}
-						break;
-					default:
-						var eventData = {
-							icon: icon, // this will be changed by reference
-							icon_option: $.extend({}, localized.icon_option)
-						};
-						/** @since 1.1.2 */
-						fwEvents.trigger(
-							'fw:ext:megamenu:icon-class-to-custom-icon-value:'+ localized.icon_option.type, eventData
-						);
-						icon = eventData.icon;
-				}
-
-				modal.set('values', {
-					icon: icon
-				});
-			}
-
-			// Listen for values change
-			eventProxy.listenTo(modal, 'change:values', function(modal, values) {
-				if (
-					typeof values.icon !== 'string'
-					&&
-					localized.icon_option.type === 'icon-v2'
-				) {
-					values.icon = values.icon['icon-class']
-				}
-
-				$(event.target).closest('.field-mega-menu-icon').find('input').val(values.icon).trigger('change');
-			});
-
-			modal.open();
-		});
-	})();
-
-	// Remove Icon Button
-	$(document).on('click', '[data-action=mega-menu-remove-icon]', function (event) {
-		event.preventDefault();
-		event.stopPropagation();
-		$(this).closest('.field-mega-menu-icon').find('input').val('').trigger('change');
-	});
+	// NOTE: the standalone icon picker was removed — the icon is now an option
+	// inside the per-item "Settings" modal (icon-v2). See item.php / helpers.php.
 
 	// The problem is in using **change** event for initialization.
 	//
@@ -295,7 +152,7 @@ jQuery(function ($) {
 					$button.text(localized.l10n.item_options_btn);
 					$button.attr('aria-label', localized.l10n.item_options_btn);
 
-					$item.find('.field-mega-menu-icon:first').append($button);
+					$item.find('.field-mega-menu-settings:first').append($button);
 				}
 
 				if (typeof inst.values[id] !== 'undefined') {

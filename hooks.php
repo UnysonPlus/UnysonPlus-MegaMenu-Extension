@@ -74,7 +74,7 @@ function _filter_fw_ext_mega_menu_wp_nav_menu_objects($sorted_menu_items, $args)
 		if (isset($mega_menu[$item->menu_item_parent])) {
 			$item->classes[] = 'mega-menu-col';
 		}
-		if (fw_ext_mega_menu_get_meta($item, 'icon')) {
+		if (fw_ext_mega_menu_item_icon($item)) {
 			$item->classes[] = 'menu-item-has-icon';
 		}
 
@@ -150,7 +150,17 @@ function _filter_fw_ext_mega_menu_walker_nav_menu_start_el($item_output, $item, 
 	// Note that raw description is stored in post_content field.
 	$post_content = (string) $item->post_content;
 	if ($depth > 0 && trim($post_content) !== '') {
-		$item_output .= '<div>' . do_shortcode($post_content) . '</div>';
+		$item_output .= '<div class="mega-menu-desc">' . do_shortcode($post_content) . '</div>';
+	}
+
+	// Column content types (image / rich content / widget / raw). A column is a
+	// level-2 MegaMenu item; when its Content is not "links", render the payload
+	// here (in place of the — usually empty — sub-menu).
+	if (fw_ext_mega_menu_is_mm_item($item) == 2) {
+		$content_type = (string) fw_ext_mega_menu_get_item_option($item, 'column', 'content_type', 'links');
+		if ($content_type !== 'links') {
+			$item_output .= fw_ext_mega_menu_render_column_content($item, $content_type);
+		}
 	}
 
 	return $item_output;

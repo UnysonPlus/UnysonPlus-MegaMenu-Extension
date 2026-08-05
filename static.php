@@ -15,9 +15,9 @@ if (apply_filters('fw:ext:megamenu:enqueue-icon-css', true)) {
 	$icon_option = $ext->get_icon_option();
 
 	if (
-		$icon_option['type'] === 'icon-v2'
+		$icon_option['type'] === 'icon'
 		&&
-		($icon_v2 = fw()->backend->option_type('icon-v2'))
+		($icon_v2 = fw()->backend->option_type('icon'))
 		&&
 		isset($icon_v2->packs_loader)
 		&&
@@ -50,5 +50,16 @@ if (apply_filters('fw:ext:megamenu:enqueue-frontend-css', true)) {
 		array(),
 		$ext->manifest->get_version(),
 		true
+	);
+
+	// Front-end behavior config. Theme-agnostic defaults; the host theme (or any
+	// integration) feeds real values via the filter — e.g. UnysonPlus theme maps
+	// its "Header → Mega Menu → Animation & Behavior" settings here.
+	wp_localize_script(
+		'fw-ext-megamenu',
+		'_fw_mega_menu',
+		apply_filters('fw:ext:megamenu:frontend-config', array(
+			'openOn' => 'hover', // 'hover' | 'click'
+		))
 	);
 }
