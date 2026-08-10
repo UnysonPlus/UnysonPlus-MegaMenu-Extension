@@ -23,6 +23,10 @@
 	top: 100%;
 	left: 0;
 	z-index: 1000;
+	/* SIZE TO CONTENT. An absolutely-positioned panel shrink-to-fits against its (narrow) trigger <li>, so a
+	   multi-column row had no room and wrapped its columns into a single stack. `max-content` sizes the panel
+	   to its columns laid out side-by-side; min-width is the floor, max-width (viewport) the ceiling. */
+	width: max-content;
 	min-width: var(--mm-panel-min-width, 240px);
 	max-width: calc(100vw - 24px);
 	padding: var(--mm-panel-pad, 16px);
