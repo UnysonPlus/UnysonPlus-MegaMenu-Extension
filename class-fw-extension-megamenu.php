@@ -71,7 +71,10 @@ class FW_Extension_Megamenu extends FW_Extension
 		wp_enqueue_script(
 			"fw-ext-{$this->get_name()}-admin",
 			$this->get_uri('/static/js/admin.js'),
-			array('fw'),
+			// 'underscore' is declared EXPLICITLY: admin.js uses _.* directly.
+			// It used to arrive transitively via 'fw', which no longer depends
+			// on Underscore now that fw.js is Underscore-free.
+			array('fw', 'underscore'),
 			$this->manifest->get_version()
 		);
 
