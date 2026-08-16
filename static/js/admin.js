@@ -121,7 +121,15 @@ jQuery(function ($) {
 			modal: new fw.OptionsModal({
 				options: []
 			}),
-			eventProxy: new Backbone.Model({}),
+			/**
+			 * A listener host, nothing more — it only ever calls listenTo /
+			 * stopListening on inst.modal. This was `new Backbone.Model({})`,
+			 * which pulled the whole of Backbone onto the nav-menus screen for
+			 * an empty model. fw.Events (fw-oo.js, since 2.16.11) provides the
+			 * same two methods and initialises its bookkeeping lazily, so a
+			 * plain mixin object is a complete replacement.
+			 */
+			eventProxy: Object.assign({}, fw.Events),
 			/**
 			 * Remember ajax handlers and abort previous if a new one was requested
 			 * On slow internet connection, when you will move an open menu tree and change the hierarchy
@@ -135,7 +143,10 @@ jQuery(function ($) {
 					&&
 					(type = inst.getItemType($item))
 					&&
-					!_.isEmpty(inst.options[type])
+					// was !_.isEmpty(…) — the type has options registered
+					inst.options[type]
+					&&
+					Object.keys(inst.options[type]).length > 0
 				)) {
 					if (typeof inst.ajaxHandlers.values[id] != 'undefined') {
 						inst.ajaxHandlers.values[id].abort();
@@ -206,7 +217,7 @@ jQuery(function ($) {
 
 				// Update all sub-items (until we reach a higher level item level)
 				do {
-					_.defer(inst.updateUi, $item);
+					setTimeout(inst.updateUi, 0, $item);
 					$item = $item.next();
 				} while ($item.length && inst.extractItemDepth($item) > itemDepth);
 			}
@@ -214,17 +225,17 @@ jQuery(function ($) {
 
 		// Add ui elements on item box open
 		$('#update-nav-menu').on('click', '.menu-item > .menu-item-bar .item-edit', function(){
-			_.defer(inst.updateUi, $(this).closest('.menu-item'));
+			setTimeout(inst.updateUi, 0, $(this).closest('.menu-item'));
 		});
 
 		// Update UI on "Use as MegaMenu" change
 		$('#update-nav-menu').on('change', '.menu-item > .menu-item-settings input.mega-menu-enabled', function () {
-			_.defer(inst.updateItemsTreeUi, $(this).closest('.menu-item'));
+			setTimeout(inst.updateItemsTreeUi, 0, $(this).closest('.menu-item'));
 		});
 
 		// Items moving has stopped
 		$('#update-nav-menu').on('sortstop', function (e, s) {
-			_.defer(inst.updateItemsTreeUi, $(s.item));
+			setTimeout(inst.updateItemsTreeUi, 0, $(s.item));
 		});
 
 		// Prepare and open modal on button click

@@ -71,10 +71,11 @@ class FW_Extension_Megamenu extends FW_Extension
 		wp_enqueue_script(
 			"fw-ext-{$this->get_name()}-admin",
 			$this->get_uri('/static/js/admin.js'),
-			// 'underscore' is declared EXPLICITLY: admin.js uses _.* directly.
-			// It used to arrive transitively via 'fw', which no longer depends
-			// on Underscore now that fw.js is Underscore-free.
-			array('fw', 'underscore'),
+			// admin.js is free of both Backbone and Underscore as of 1.1.31:
+			// the empty Backbone.Model event proxy is now Object.assign({},
+			// fw.Events), and _.defer / _.isEmpty are native. It only needs
+			// 'fw' (for fw.OptionsModal + fw.Events).
+			array('fw'),
 			$this->manifest->get_version()
 		);
 
