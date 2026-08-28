@@ -1,17 +1,22 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 /**
+ * Deprecated alias for fw_ext_mega_menu_get_meta(); reads a mega-menu meta value with a fallback default.
+ *
  * @deprecated
  * @param $post
  * @param $key
  * @param null $default
  * @return mixed
  */
+/** Deprecated alias for fw_ext_mega_menu_get_meta(); reads a mega-menu meta value with a fallback default. */
 function fw_mega_menu_get_meta($post, $key, $default = null) {
 	return fw_ext_mega_menu_get_meta($post, $key, $default);
 }
 
 /**
+ * Deprecated alias for fw_ext_mega_menu_update_meta(); writes mega-menu meta from the given array.
+ *
  * @deprecated
  * @param $post
  * @param array $array
@@ -22,6 +27,8 @@ function fw_mega_menu_update_meta($post, array $array) {
 }
 
 /**
+ * Deprecated alias building the admin input name attribute for a mega-menu meta key.
+ *
  * @deprecated
  * @param $post
  * @param $key
@@ -32,6 +39,8 @@ function fw_mega_menu_name_meta($post, $key) {
 }
 
 /**
+ * Deprecated alias returning the submitted POST values for a mega-menu item.
+ *
  * @deprecated
  * @param $post
  * @return array

@@ -35,6 +35,7 @@ class FW_Extension_Megamenu extends FW_Extension
 	 */
 	public function get_icon_option()
 	{
+		/** Filters the option-type descriptor used for the mega menu's icon picker, shared by admin and front-end. */
 		return apply_filters('fw:ext:megamenu:icon-option', array(
 			'type'  => 'icon',
 			'label' => __('Select Icon', 'fw'),
@@ -99,6 +100,7 @@ class FW_Extension_Megamenu extends FW_Extension
 			'_fw_ext_mega_menu',
 			array(
 				'l10n' => array(
+					/** Filters the label of the mega-menu item settings button shown in the admin menu editor. */
 					'item_options_btn' => apply_filters('fw:ext:megamenu:label:item-options-btn', __('Settings', 'fw')),
 				),
 				'nonce' => wp_create_nonce('fw_ext_megamenu'),

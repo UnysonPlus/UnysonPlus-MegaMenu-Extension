@@ -11,6 +11,7 @@ if (!$ext) {
 }
 
 // Icon font for the front end — match whatever the configured icon picker stores.
+/** Filters whether the mega menu enqueues its icon-font CSS on the front end. */
 if (apply_filters('fw:ext:megamenu:enqueue-icon-css', true)) {
 	$icon_option = $ext->get_icon_option();
 
@@ -37,6 +38,7 @@ if (apply_filters('fw:ext:megamenu:enqueue-icon-css', true)) {
 }
 
 // Baseline front-end layout (opt-out via the filter below).
+/** Filters whether the mega menu's baseline front-end CSS/JS and behavior config are enqueued (opt-out point). */
 if (apply_filters('fw:ext:megamenu:enqueue-frontend-css', true)) {
 	wp_enqueue_style(
 		'fw-ext-megamenu',
@@ -58,6 +60,7 @@ if (apply_filters('fw:ext:megamenu:enqueue-frontend-css', true)) {
 	wp_localize_script(
 		'fw-ext-megamenu',
 		'_fw_mega_menu',
+		/** Filters the mega menu front-end behavior config localized to script, e.g. whether submenus open on hover or click. */
 		apply_filters('fw:ext:megamenu:frontend-config', array(
 			'openOn' => 'hover', // 'hover' | 'click'
 		))

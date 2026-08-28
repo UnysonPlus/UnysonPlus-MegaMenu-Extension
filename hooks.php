@@ -126,7 +126,11 @@ add_filter('wp_nav_menu_objects', '_filter_fw_ext_mega_menu_wp_nav_menu_objects'
  * @internal
  */
 function _filter_fw_ext_mega_menu_walker_nav_menu_start_el($item_output, $item, $depth, $args) {
-	/** @since 1.1.3 */
+	/**
+	 * Filters whether to skip the mega-menu walker's custom start-element rendering for a given menu item.
+	 *
+	 * @since 1.1.3
+	 */
 	if (apply_filters('fw:ext:megamenu:start_el_item_content:disable', false, $item)) {
 		return $item_output;
 	}

@@ -1,15 +1,19 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 /**
+ * Returns a mega menu meta value for a post, falling back to the given default.
+ *
  * @param int|object $post
  * @param $key
  * @param null $default
  * @return mixed
  */
+/** Returns a mega menu meta value for a post, falling back to the given default. */
 function fw_ext_mega_menu_get_meta($post, $key, $default = null) {
 	return _fw_ext_mega_menu_meta($post, $key, $default);
 }
 
+/** Updates mega menu meta for a post from the given key-value array. */
 function fw_ext_mega_menu_update_meta($post, array $array) {
 	return _fw_ext_mega_menu_meta($post, $array, null, true);
 }

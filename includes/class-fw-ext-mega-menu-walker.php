@@ -169,6 +169,7 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 						if ($mm_row_extra = fw_ext_mega_menu_get_item_option($id, 'row', 'extra_class', '')) {
 							$mm_row_class .= ' ' . esc_attr($mm_row_extra);
 						}
+						/** Filters the mega menu row container tag and attributes before the dropdown wrapper is rendered. */
 						$mega_menu_container = apply_filters('fw_ext_mega_menu_container', array(
 							'tag'  => 'div',
 							'attr' => array_filter(array(
@@ -197,6 +198,7 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 							$classes['sub-menu-has-icons'] = true;
 						}
 					}
+					/** Filters the CSS classes applied to a mega menu sub-menu wrapper at start_lvl, given element and depth context. */
 					$classes = apply_filters('fw_ext_mega_menu_start_lvl_classes', $classes, array(
 						'element' => $element,
 						'children_elements' => $children_elements,
