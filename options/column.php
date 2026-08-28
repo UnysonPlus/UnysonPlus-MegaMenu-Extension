@@ -25,7 +25,7 @@ if (!empty($GLOBALS['wp_registered_sidebars']) && is_array($GLOBALS['wp_register
 // column's fraction filled. Value keys are unchanged (auto, 1/2, …) so switching
 // from the old select to this picker needs no data migration.
 $fw_mm_width_svg = function ($fill, $label) {
-	$w = 116; $h = 50; $accent = '#2271b1'; $grey = '#c3c8cf';
+	$w = 116; $h = 50; $accent = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['accent'] : '#3858e9'; $grey = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['structure'] : '#dadada';
 	$bx = 10; $by = 12; $bw = 96; $bh = 15; $rx = 3;
 	$outline = '<rect x="' . $bx . '" y="' . $by . '" width="' . $bw . '" height="' . $bh . '" rx="' . $rx . '" fill="none" stroke="' . $grey . '" stroke-width="1.4"/>';
 	if ($fill === 'auto') {

@@ -180,7 +180,7 @@ function fw_ext_mega_menu_icon_options() {
 	$pos_svg = function ($variant) {
 		// Narrow viewBox (90x44) so all four tiles fit on a single row of the
 		// float layout in the Settings modal, while staying visually distinct.
-		$w = 90; $h = 44; $accent = '#2271b1'; $grey = '#c3c8cf';
+		$w = 90; $h = 44; $accent = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['accent'] : '#3858e9'; $grey = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['structure'] : '#dadada';
 		$sq = function ($x, $y, $s) use ($accent) {
 			return '<rect x="' . $x . '" y="' . $y . '" width="' . $s . '" height="' . $s . '" rx="3" fill="' . $accent . '"/>';
 		};
