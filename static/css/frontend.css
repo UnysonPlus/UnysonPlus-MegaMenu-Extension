@@ -64,9 +64,9 @@
 }
 
 /* Open on hover or keyboard focus. In click-to-open mode the extension JS adds
-   .mm-trigger-click to the parent, which suppresses the hover branch so only a
-   click (→ .is-open) or keyboard focus opens the panel. */
-.menu-item-has-mega-menu:not(.mm-trigger-click):hover > .mega-menu,
+   .mm-trigger-click; in hover-intent mode it adds .mm-hover-intent — both suppress the
+   instant :hover branch so the panel opens via .is-open (JS, with delays) or keyboard focus. */
+.menu-item-has-mega-menu:not(.mm-trigger-click):not(.mm-hover-intent):hover > .mega-menu,
 .menu-item-has-mega-menu:focus-within > .mega-menu,
 .menu-item-has-mega-menu.is-open > .mega-menu {
 	opacity: 1;
@@ -454,3 +454,56 @@ img.mega-menu-icon {
 		transition: none;
 	}
 }
+
+/* ---------------------------------------------------------------------------
+ * Per-device visibility (Settings → Hide On). The classes are added to the
+ * menu <li> by hooks.php; these media queries hide the item at the chosen
+ * screen size. Works for a whole mega item, a column, or a single link — in
+ * the desktop panel and inside a host theme's mobile drawer alike.
+ * ------------------------------------------------------------------------- */
+@media (min-width: 992px)                         { .mm-hide-desktop { display: none !important; } }
+@media (min-width: 768px) and (max-width: 991.98px) { .mm-hide-tablet  { display: none !important; } }
+@media (max-width: 767.98px)                      { .mm-hide-mobile  { display: none !important; } }
+
+/* ---------------------------------------------------------------------------
+ * Column content types: Call to action + Recent posts. Token-driven so a host
+ * theme can restyle via --mm-* custom properties; the fallbacks keep them
+ * presentable standalone.
+ * ------------------------------------------------------------------------- */
+.mega-menu-content--cta { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
+.mega-menu-content--cta .mm-cta-img { max-width: 100%; height: auto; border-radius: var(--mm-cta-radius, 8px); }
+.mega-menu-content--cta .mm-cta-eyebrow { font-size: .72em; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.mega-menu-content--cta .mm-cta-heading { font-weight: 700; font-size: 1.1em; line-height: 1.25; }
+.mega-menu-content--cta .mm-cta-text { opacity: .85; }
+.mega-menu-content--cta .mm-cta-btn {
+	display: inline-block; margin-top: .35rem; padding: .5rem 1.1rem;
+	border-radius: var(--mm-cta-btn-radius, 999px);
+	background: var(--mm-cta-btn-bg, #1c1e22); color: var(--mm-cta-btn-color, #fff);
+	text-decoration: none; font-weight: 600;
+}
+.mega-menu-content--cta .mm-cta-btn:hover { opacity: .92; }
+
+.mega-menu-content--posts .mm-posts { list-style: none; margin: 0; padding: 0; }
+.mega-menu-content--posts .mm-post > a { display: flex; align-items: center; gap: .6rem; padding: .35rem 0; text-decoration: none; }
+.mega-menu-content--posts .mm-post-thumb img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; display: block; }
+.mega-menu-content--posts .mm-post-title { flex: 1; min-width: 0; }
+
+/* ---------------------------------------------------------------------------
+ * Tabbed panel layout (row → Panel Layout = Tabs). frontend.js builds a
+ * .mm-tab-rail from the column titles; each column becomes a tab panel. Kept
+ * free of !important so a host theme's mobile-drawer rules (which stack every
+ * column) still win inside the drawer.
+ * ------------------------------------------------------------------------- */
+.mega-menu.mega-menu--tabs { display: flex; align-items: stretch; }
+.mega-menu--tabs .mm-tab-rail { list-style: none; margin: 0; padding: 0; flex: 0 0 auto; min-width: var(--mm-tab-rail-width, 190px); border-right: 1px solid var(--mm-divider-color, rgba(0,0,0,.08)); }
+.mega-menu--tabs .mm-tab-rail li { margin: 0; }
+.mega-menu--tabs .mm-tab-rail button { display: block; width: 100%; text-align: left; padding: .55rem .85rem; background: none; border: 0; cursor: pointer; font: inherit; color: inherit; border-radius: 6px; }
+.mega-menu--tabs .mm-tab-rail li.is-active button,
+.mega-menu--tabs .mm-tab-rail button:hover { background: var(--mm-tab-active-bg, rgba(0,0,0,.05)); font-weight: 600; }
+.mega-menu--tabs > .mega-menu-row { flex: 1 1 auto; min-width: 0; padding-left: 1.25rem; }
+.mega-menu--tabs > .mega-menu-row > .mega-menu-col { display: none; width: 100%; }
+.mega-menu--tabs > .mega-menu-row > .mega-menu-col.mm-tab-active { display: block; }
+.mega-menu--tabs > .mega-menu-row > .mega-menu-col > a { display: none; } /* title now lives in the rail */
+
+/* WooCommerce cart content column */
+.mega-menu-content--woocart .widget_shopping_cart_content { min-width: 240px; }

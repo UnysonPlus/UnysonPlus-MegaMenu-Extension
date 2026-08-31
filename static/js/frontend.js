@@ -25,15 +25,23 @@
 			return;
 		}
 
-		// Config bridge (see static.php → filter 'fw:ext:megamenu:frontend-config').
+		// Config bridge (see helpers.php → filter 'fw:ext:megamenu:frontend-config').
 		var CFG = window._fw_mega_menu || {};
 		var openOn = CFG.openOn === 'click' ? 'click' : 'hover';
+		var i18n = CFG.i18n || {};
+		// The host theme's off-canvas drawer element id is filterable, so themes with a
+		// differently-named drawer don't fall through to double toggles.
+		var drawerId = CFG.drawerId || 'primary-navigation-drawer';
+		// Hover intent (open on a deliberate hover; close after a short grace).
+		var hoverIntent = CFG.hoverIntent !== false;
+		var openDelay = (typeof CFG.openDelay === 'number') ? CFG.openDelay : 100;
+		var closeDelay = (typeof CFG.closeDelay === 'number') ? CFG.closeDelay : 250;
 
 		// When the host theme provides an off-canvas nav drawer it owns mobile
 		// behavior (its own submenu toggles + accordion). Detect it and DON'T add
 		// the extension's own toggle button — avoids double toggles on the Unyson+
 		// theme. Standalone / other themes (no drawer) get the built-in toggle.
-		var themeManaged = !!document.getElementById('primary-navigation-drawer');
+		var themeManaged = !!document.getElementById(drawerId);
 
 		function closeSiblings(except) {
 			Array.prototype.forEach.call(parents, function (other) {
@@ -59,10 +67,34 @@
 					triggerLink.setAttribute('aria-expanded', 'false');
 				}
 			}
-			if (!themeManaged && openOn !== 'click' && triggerLink) {
-				var syncExpanded = function (open) {
-					triggerLink.setAttribute('aria-expanded', open ? 'true' : 'false');
-				};
+			var inDrawer = !!parent.closest('#' + drawerId);
+			var syncExpanded = function (open) {
+				if (triggerLink) { triggerLink.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+			};
+			if (openOn === 'hover' && hoverIntent && !inDrawer && triggerLink) {
+				// Hover intent: suppress the instant CSS :hover open (via .mm-hover-intent) and
+				// drive .is-open with small open/close delays. Keyboard focus still opens instantly.
+				parent.classList.add('mm-hover-intent');
+				var mmOpenT, mmCloseT;
+				parent.addEventListener('mouseenter', function () {
+					clearTimeout(mmCloseT);
+					mmOpenT = setTimeout(function () {
+						parent.classList.add('is-open'); syncExpanded(true); closeSiblings(parent);
+					}, openDelay);
+				});
+				parent.addEventListener('mouseleave', function () {
+					clearTimeout(mmOpenT);
+					mmCloseT = setTimeout(function () {
+						parent.classList.remove('is-open'); syncExpanded(false);
+					}, closeDelay);
+				});
+				parent.addEventListener('focusin', function () {
+					clearTimeout(mmCloseT); parent.classList.add('is-open'); syncExpanded(true);
+				});
+				parent.addEventListener('focusout', function (e) {
+					if (!parent.contains(e.relatedTarget)) { parent.classList.remove('is-open'); syncExpanded(false); }
+				});
+			} else if (!themeManaged && openOn !== 'click' && triggerLink) {
 				parent.addEventListener('mouseenter', function () { syncExpanded(true); });
 				parent.addEventListener('mouseleave', function () { syncExpanded(false); });
 				parent.addEventListener('focusin', function () { syncExpanded(true); });
@@ -74,7 +106,7 @@
 			// Desktop click-to-open: suppress hover (via .mm-trigger-click) and
 			// toggle the panel on the trigger link. Skip inside a drawer (mobile
 			// accordion there is theme-owned).
-			if (openOn === 'click' && !parent.closest('#primary-navigation-drawer')) {
+			if (openOn === 'click' && !parent.closest('#' + drawerId)) {
 				parent.classList.add('mm-trigger-click');
 				if (triggerLink) {
 					triggerLink.addEventListener('click', function (event) {
@@ -95,7 +127,7 @@
 			btn.type = 'button';
 			btn.className = 'mega-menu-toggle';
 			btn.setAttribute('aria-expanded', 'false');
-			btn.setAttribute('aria-label', 'Toggle submenu');
+			btn.setAttribute('aria-label', i18n.toggleSubmenu || 'Toggle submenu');
 			btn.innerHTML = '<span aria-hidden="true"></span>';
 
 			btn.addEventListener('click', function (event) {
@@ -166,5 +198,48 @@
 			window.addEventListener('resize', function () { fullParents.forEach(placeFull); });
 			window.addEventListener('scroll', function () { fullParents.forEach(placeFull); }, { passive: true });
 		}
+
+		// Tabbed panel layout (row → Panel Layout = Tabs): build a tab rail from the
+		// column titles; each column becomes a tab panel, one visible at a time.
+		var tabPanels = document.querySelectorAll('.mega-menu.mega-menu--tabs');
+		Array.prototype.forEach.call(tabPanels, function (panel) {
+			// Skip the drawer copy — the host theme stacks columns there; tabs are a desktop layout.
+			if (panel.closest('#' + drawerId)) { return; }
+			var row = panel.querySelector(':scope > .mega-menu-row');
+			if (!row) { return; }
+			var cols = row.querySelectorAll(':scope > .mega-menu-col');
+			if (cols.length < 2) { return; }
+
+			var rail = document.createElement('ul');
+			rail.className = 'mm-tab-rail';
+			rail.setAttribute('role', 'tablist');
+			var tabs = [];
+			var activate = function (idx) {
+				Array.prototype.forEach.call(cols, function (c, i) { c.classList.toggle('mm-tab-active', i === idx); });
+				tabs.forEach(function (t, i) {
+					t.li.classList.toggle('is-active', i === idx);
+					t.btn.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+					t.btn.tabIndex = i === idx ? 0 : -1;
+				});
+			};
+			Array.prototype.forEach.call(cols, function (col, i) {
+				var titleEl = col.querySelector(':scope > a');
+				var label = (titleEl ? (titleEl.textContent || '') : '').trim() || ('Tab ' + (i + 1));
+				var li = document.createElement('li');
+				li.setAttribute('role', 'presentation');
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.setAttribute('role', 'tab');
+				btn.textContent = label;
+				li.appendChild(btn);
+				rail.appendChild(li);
+				tabs.push({ li: li, btn: btn });
+				btn.addEventListener('mouseenter', function () { activate(i); });
+				btn.addEventListener('focus', function () { activate(i); });
+				btn.addEventListener('click', function (e) { e.preventDefault(); activate(i); });
+			});
+			panel.insertBefore(rail, row);
+			activate(0);
+		});
 	});
 })();

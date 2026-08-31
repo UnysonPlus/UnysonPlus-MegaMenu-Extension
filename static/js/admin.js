@@ -66,6 +66,88 @@ jQuery(function ($) {
 
 	})();
 
+	// ---- Export / Import layout (buttons injected on the enabled top item, see updateUi) ----
+	// Export → download the item's layout (row options + child columns/items) as a JSON file.
+	$(document).on('click', '.fw-mm-export', function (e) {
+		e.preventDefault();
+		var id = $(this).closest('.menu-item').find('input.menu-item-data-db-id:first').val();
+		if (!id) { return; }
+		$.ajax({
+			url: ajaxurl, method: 'post', dataType: 'json',
+			data: { action: 'fw_ext_megamenu_export_layout', _ajax_nonce: localized.nonce, id: id }
+		}).done(function (r) {
+			if (r && r.success && r.data && r.data.layout) {
+				var blob = new Blob([JSON.stringify(r.data.layout, null, '\t')], { type: 'application/json' });
+				var a = document.createElement('a');
+				a.href = URL.createObjectURL(blob);
+				a.download = r.data.filename || 'mega-menu-layout.json';
+				document.body.appendChild(a); a.click();
+				setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+			} else {
+				window.alert((r && r.data && r.data.message) || (localized.l10n && localized.l10n.export_fail) || 'Export failed.');
+			}
+		});
+	});
+	// Import ← upload a previously exported JSON, re-creating the columns/items beneath this item.
+	$(document).on('click', '.fw-mm-import', function (e) {
+		e.preventDefault();
+		var id = $(this).closest('.menu-item').find('input.menu-item-data-db-id:first').val();
+		if (!id) { return; }
+		var input = document.createElement('input');
+		input.type = 'file'; input.accept = '.json,application/json';
+		input.onchange = function () {
+			var file = input.files && input.files[0];
+			if (!file) { return; }
+			var reader = new FileReader();
+			reader.onload = function () {
+				$.ajax({
+					url: ajaxurl, method: 'post', dataType: 'json',
+					data: { action: 'fw_ext_megamenu_import_layout', _ajax_nonce: localized.nonce, id: id, layout: reader.result }
+				}).done(function (r) {
+					if (r && r.success) {
+						window.alert(((localized.l10n && localized.l10n.import_done) || 'Imported %d item(s). Reloading…').replace('%d', r.data.created));
+						location.reload();
+					} else {
+						window.alert((r && r.data && r.data.message) || (localized.l10n && localized.l10n.import_fail) || 'Import failed.');
+					}
+				});
+			};
+			reader.readAsText(file);
+		};
+		input.click();
+	});
+
+	// Preview → render the assembled panel (saved state) in an overlay.
+	$(document).on('click', '.fw-mm-preview-btn', function (e) {
+		e.preventDefault();
+		var id = $(this).closest('.menu-item').find('input.menu-item-data-db-id:first').val();
+		if (!id) { return; }
+		var $ov = $('#fw-mm-preview-overlay');
+		if (!$ov.length) {
+			$ov = $('<div id="fw-mm-preview-overlay" class="fw-mm-preview-overlay"><div class="fw-mm-preview-box"><div class="fw-mm-preview-head"><span class="fw-mm-preview-title"></span><button type="button" class="button fw-mm-preview-close"></button></div><div class="fw-mm-preview fw-mm-preview-body"></div></div></div>');
+			$('body').append($ov);
+			$ov.find('.fw-mm-preview-title').text((localized.l10n && localized.l10n.preview_title) || 'Mega Menu preview');
+			$ov.find('.fw-mm-preview-close').text((localized.l10n && localized.l10n.preview_close) || 'Close');
+			$ov.on('click', function (ev) { if (ev.target === $ov[0]) { $ov.hide(); } });
+			$ov.find('.fw-mm-preview-close').on('click', function () { $ov.hide(); });
+		}
+		var $body = $ov.find('.fw-mm-preview-body');
+		$body.html('<span class="spinner is-active" style="float:none"></span>');
+		$ov.css('display', 'flex');
+		$.ajax({
+			url: ajaxurl, method: 'post', dataType: 'json',
+			data: { action: 'fw_ext_megamenu_preview_layout', _ajax_nonce: localized.nonce, id: id }
+		}).done(function (r) {
+			if (r && r.success && r.data && r.data.html) {
+				$body.html('<ul class="primary-menu">' + r.data.html + '</ul>');
+			} else {
+				$body.text((r && r.data && r.data.message) || (localized.l10n && localized.l10n.preview_fail) || 'Preview failed.');
+			}
+		}).fail(function () {
+			$body.text((localized.l10n && localized.l10n.preview_fail) || 'Preview failed.');
+		});
+	});
+
 	// NOTE: the standalone icon picker was removed — the icon is now an option
 	// inside the per-item "Settings" modal (icon-v2). See item.php / helpers.php.
 
@@ -189,7 +271,7 @@ jQuery(function ($) {
 							$button.removeAttr('disabled');
 							inst.values[id] = r.data.values;
 						} else {
-							$button.text('Ajax Error');
+							$button.text((localized.l10n && localized.l10n.ajax_error) || 'Ajax Error');
 						}
 					}).fail(function (x, y, error) {
 						if ($button.length && $button.is(':visible')) { // may not exist
@@ -206,6 +288,21 @@ jQuery(function ($) {
 					}).always(function () {
 						delete inst.ajaxHandlers.values[id];
 					});
+				}
+
+
+				// Export / Import layout controls — only on the enabled top-level mega item.
+				if (type === 'row' && !$item.find('.fw-mm-io:first').length) {
+					var $io = $('<span class="fw-mm-io"></span>');
+					$('<button type="button" class="button-link fw-mm-preview-btn"></button>')
+						.text((localized.l10n && localized.l10n.preview_layout) || 'Preview').appendTo($io);
+					$io.append(document.createTextNode(' · '));
+					$('<button type="button" class="button-link fw-mm-export"></button>')
+						.text((localized.l10n && localized.l10n.export_layout) || 'Export layout').appendTo($io);
+					$io.append(document.createTextNode(' · '));
+					$('<button type="button" class="button-link fw-mm-import"></button>')
+						.text((localized.l10n && localized.l10n.import_layout) || 'Import layout').appendTo($io);
+					$item.find('.field-mega-menu-settings:first').append($io);
 				}
 			},
 			extractItemDepth: function($item){

@@ -19,6 +19,14 @@ if (!empty($GLOBALS['wp_registered_sidebars']) && is_array($GLOBALS['wp_register
 	}
 }
 
+// Public post types → choices for the "Recent posts (dynamic)" content type.
+$fw_mm_post_types = array();
+foreach (get_post_types(array('public' => true), 'objects') as $fw_mm_pt) {
+	if ($fw_mm_pt->name === 'attachment') { continue; }
+	$fw_mm_post_types[$fw_mm_pt->name] = isset($fw_mm_pt->labels->name) ? $fw_mm_pt->labels->name : $fw_mm_pt->name;
+}
+if (empty($fw_mm_post_types)) { $fw_mm_post_types = array('post' => __('Posts', 'fw')); }
+
 // Visual width tiles for the "Column Width" image-picker (like the page builder's
 // Column "Width Override", but without the per-device wrapper — a mega panel just
 // stacks on mobile). Each tile is an inline data-URI SVG: a mini row bar with the
@@ -50,6 +58,7 @@ $fw_mm_width_tile = function ($fill, $label) use ($fw_mm_width_svg) {
 // Per-cluster border-less groups (Icon, Width, Background, Column Content, CSS Class).
 $options = array_merge(
 	fw_ext_mega_menu_icon_options(),
+	fw_ext_mega_menu_visibility_options(),
 
 	fw_ext_mega_menu_group('group_width', array(
 		'width' => array(
@@ -143,6 +152,9 @@ $options = array_merge(
 				'links'   => __('Menu links (default)', 'fw'),
 				'image'   => __('Image', 'fw'),
 				'content' => __('Rich content (HTML + shortcodes)', 'fw'),
+				'cta'     => __('Call to action (heading + button)', 'fw'),
+				'posts'   => __('Recent posts (dynamic)', 'fw'),
+				'woo_cart' => __('WooCommerce cart', 'fw'),
 				'widget'  => __('Widget area', 'fw'),
 				'raw'     => __('Raw HTML', 'fw'),
 			),
@@ -187,6 +199,61 @@ $options = array_merge(
 			'desc'    => __('Output exactly as entered (shortcodes still run). For trusted markup only.', 'fw'),
 			'value'   => '',
 			'show_if' => array('content_type' => 'raw'),
+		),
+
+		// --- Call to action (heading + text + button, optional image) ---
+		'cta_eyebrow' => array(
+			'type' => 'text', 'label' => __('CTA Eyebrow', 'fw'), 'value' => '',
+			'desc' => __('Small overline above the heading. Optional.', 'fw'),
+			'show_if' => array('content_type' => 'cta'),
+		),
+		'cta_heading' => array(
+			'type' => 'text', 'label' => __('CTA Heading', 'fw'), 'value' => '',
+			'show_if' => array('content_type' => 'cta'),
+		),
+		'cta_text' => array(
+			'type' => 'textarea', 'label' => __('CTA Text', 'fw'), 'value' => '',
+			'show_if' => array('content_type' => 'cta'),
+		),
+		'cta_image' => array(
+			'type' => 'upload', 'label' => __('CTA Image', 'fw'), 'value' => '',
+			'desc' => __('Optional image shown above the heading.', 'fw'),
+			'show_if' => array('content_type' => 'cta'),
+		),
+		'cta_button_label' => array(
+			'type' => 'text', 'label' => __('Button Label', 'fw'), 'value' => '',
+			'show_if' => array('content_type' => 'cta'),
+		),
+		'cta_button_link' => array(
+			'type' => 'text', 'label' => __('Button Link', 'fw'), 'value' => '',
+			'desc' => __('External links open in a new tab.', 'fw'),
+			'show_if' => array('content_type' => 'cta'),
+		),
+
+		// --- Recent posts (dynamic) ---
+		'posts_post_type' => array(
+			'type' => 'select', 'label' => __('Post Type', 'fw'),
+			'value' => 'post', 'choices' => $fw_mm_post_types,
+			'show_if' => array('content_type' => 'posts'),
+		),
+		'posts_count' => array(
+			'type' => 'text', 'label' => __('How Many', 'fw'), 'value' => '5',
+			'desc' => __('Number of items to show.', 'fw'),
+			'show_if' => array('content_type' => 'posts'),
+		),
+		'posts_orderby' => array(
+			'type' => 'select', 'label' => __('Order By', 'fw'), 'value' => 'date',
+			'choices' => array(
+				'date'     => __('Newest first', 'fw'),
+				'title'    => __('Title (A–Z)', 'fw'),
+				'rand'     => __('Random', 'fw'),
+				'menu_order' => __('Menu order', 'fw'),
+			),
+			'show_if' => array('content_type' => 'posts'),
+		),
+		'posts_thumb' => array(
+			'type' => 'switch', 'label' => __('Show Thumbnail', 'fw'), 'value' => 'yes',
+			'show_if' => array('content_type' => 'posts'),
 		),
 	)),
 

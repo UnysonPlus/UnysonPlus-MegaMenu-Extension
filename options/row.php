@@ -14,6 +14,7 @@ $fw_mm_color = function ($label, $kind = 'bg') {
 // Per-cluster border-less groups (Icon, Dropdown Width, Background, CSS Class).
 $options = array_merge(
 	fw_ext_mega_menu_icon_options(),
+	fw_ext_mega_menu_visibility_options(),
 
 	fw_ext_mega_menu_group('group_dropdown', array(
 		'dropdown_width' => array(
@@ -33,6 +34,16 @@ $options = array_merge(
 			'desc'    => __('e.g. 800px or 90%. Used when "Dropdown Width" is "Custom".', 'fw'),
 			'value'   => '',
 			'show_if' => array('dropdown_width' => 'custom'),
+		),
+		'mm_layout' => array(
+			'type'    => 'select',
+			'label'   => __('Panel Layout', 'fw'),
+			'desc'    => __('Columns lays the columns out side by side (default). Tabs turns each column into a tab — the column title is the tab label and its content is the panel.', 'fw'),
+			'value'   => 'columns',
+			'choices' => array(
+				'columns' => __('Columns (default)', 'fw'),
+				'tabs'    => __('Tabs', 'fw'),
+			),
 		),
 	)),
 

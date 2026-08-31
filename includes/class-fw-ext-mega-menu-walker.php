@@ -166,15 +166,30 @@ class FW_Ext_Mega_Menu_Walker extends Walker_Nav_Menu
 						if (fw_ext_mega_menu_get_item_option($id, 'row', 'dropdown_width', 'default') === 'full-width') {
 							$mm_row_class .= ' mega-menu-full';
 						}
-						if ($mm_row_extra = fw_ext_mega_menu_get_item_option($id, 'row', 'extra_class', '')) {
-							$mm_row_class .= ' ' . esc_attr($mm_row_extra);
+						if (fw_ext_mega_menu_get_item_option($id, 'row', 'mm_layout', 'columns') === 'tabs') {
+							$mm_row_class .= ' mega-menu--tabs';
 						}
+						if ($mm_row_extra = fw_ext_mega_menu_get_item_option($id, 'row', 'extra_class', '')) {
+							// Sanitize per-token like the column/item extra classes (hooks.php),
+							// instead of dropping a raw esc_attr'd blob into the class attribute.
+							foreach (preg_split('/\s+/', trim((string) $mm_row_extra)) as $mm_row_cls) {
+								if ($mm_row_cls !== '') {
+									$mm_row_class .= ' ' . sanitize_html_class($mm_row_cls);
+								}
+							}
+						}
+						// A11y (WAI-ARIA disclosure): give the panel a stable id + region label so the
+						// trigger link can point at it with aria-controls (see views/item-link.php).
+						$mm_row_label = isset($element->title) ? wp_strip_all_tags((string) $element->title) : '';
 						/** Filters the mega menu row container tag and attributes before the dropdown wrapper is rendered. */
 						$mega_menu_container = apply_filters('fw_ext_mega_menu_container', array(
 							'tag'  => 'div',
 							'attr' => array_filter(array(
-								'class' => $mm_row_class,
-								'style' => fw_ext_mega_menu_row_container_style($id),
+								'class'      => $mm_row_class,
+								'id'         => 'mega-menu-panel-' . (int) $id,
+								'role'       => 'region',
+								'aria-label' => $mm_row_label,
+								'style'      => fw_ext_mega_menu_row_container_style($id),
 							))
 						), array(
 							'element' => $element,

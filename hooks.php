@@ -108,6 +108,17 @@ function _filter_fw_ext_mega_menu_wp_nav_menu_objects($sorted_menu_items, $args)
 				}
 			}
 		}
+
+		// Per-device visibility → mm-hide-{device} classes on the <li> (works for any type:
+		// a whole mega item, a column, or a single link). Styled by media queries in frontend.css.
+		$mm_hide = fw_ext_mega_menu_get_item_option($item, fw_ext_mega_menu_item_type($item), 'hide_on', array());
+		if (is_array($mm_hide)) {
+			foreach (array('desktop', 'tablet', 'mobile') as $mm_dev) {
+				if (!empty($mm_hide[$mm_dev])) {
+					$item->classes[] = 'mm-hide-' . $mm_dev;
+				}
+			}
+		}
 	}
 
 	return $sorted_menu_items;
@@ -170,3 +181,99 @@ function _filter_fw_ext_mega_menu_walker_nav_menu_start_el($item_output, $item, 
 	return $item_output;
 }
 add_filter('walker_nav_menu_start_el', '_filter_fw_ext_mega_menu_walker_nav_menu_start_el', 10, 4);
+
+/**
+ * Late fallback for conditional asset loading: if a mega menu is rendered on a page
+ * where the location scan (fw_ext_mega_menu_should_enqueue_assets) didn't detect it
+ * — e.g. a wp_nav_menu() call with an explicit menu, or a menu widget — enqueue the
+ * assets now. fw_ext_mega_menu_do_enqueue() is idempotent, so this never double-loads.
+ * Late styles print in the footer (a minor, edge-case trade-off vs loading on every page).
+ *
+ * @internal
+ */
+function _filter_fw_ext_mega_menu_late_enqueue($nav_menu, $args) {
+	if (!is_admin() && is_string($nav_menu) && strpos($nav_menu, 'menu-item-has-mega-menu') !== false) {
+		fw_ext_mega_menu_do_enqueue();
+	}
+	return $nav_menu;
+}
+add_filter('wp_nav_menu', '_filter_fw_ext_mega_menu_late_enqueue', 10, 2);
+
+/**
+ * Block-editor / FSE bridge
+ * -------------------------
+ * A server-rendered "Mega Menu" block that outputs a chosen nav menu THROUGH the mega walker, so a
+ * mega menu can be placed in the Site Editor / block editor / any block area — not only the classic
+ * theme header. wp_nav_menu() triggers the walker and the conditional-asset fallback, so the block
+ * gets the full mega behaviour + CSS/JS with no extra wiring.
+ */
+function fw_ext_mega_menu_register_block() {
+	if (!function_exists('register_block_type')) {
+		return; // WP < 5.0
+	}
+	$ext = fw_ext('megamenu');
+	if (!$ext) {
+		return;
+	}
+
+	wp_register_script(
+		'fw-ext-megamenu-block',
+		$ext->get_uri('/static/js/block.js'),
+		array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n'),
+		$ext->manifest->get_version(),
+		true
+	);
+
+	// Feed the editor the list of nav menus to choose from (no async fetch needed).
+	$menus = array();
+	foreach ((array) wp_get_nav_menus() as $m) {
+		$menus[] = array('id' => (int) $m->term_id, 'name' => $m->name);
+	}
+	wp_localize_script('fw-ext-megamenu-block', '_fw_mm_block', array(
+		'menus' => $menus,
+		'i18n'  => array(
+			'title'   => __('Mega Menu', 'fw'),
+			'desc'    => __('Display a navigation menu with Mega Menu support.', 'fw'),
+			'menu'    => __('Menu', 'fw'),
+			'pick'    => __('— Select a menu —', 'fw'),
+			'empty'   => __('Choose a menu to display in the block settings.', 'fw'),
+		),
+	));
+
+	register_block_type('unysonplus/mega-menu', array(
+		'api_version'     => 2,
+		'editor_script'   => 'fw-ext-megamenu-block',
+		'attributes'      => array('menu' => array('type' => 'number', 'default' => 0)),
+		'render_callback' => 'fw_ext_mega_menu_block_render',
+	));
+}
+add_action('init', 'fw_ext_mega_menu_register_block');
+
+/**
+ * Server render for the Mega Menu block.
+ * @internal
+ */
+function fw_ext_mega_menu_block_render($attributes) {
+	$menu = isset($attributes['menu']) ? (int) $attributes['menu'] : 0;
+	if (!$menu || !wp_get_nav_menu_object($menu)) {
+		return current_user_can('edit_theme_options')
+			? '<p class="unysonplus-mega-menu-block__placeholder">' . esc_html__('Mega Menu — choose a menu in the block settings.', 'fw') . '</p>'
+			: '';
+	}
+	return wp_nav_menu(array(
+		'menu'            => $menu,
+		'echo'            => false,
+		'container'       => 'nav',
+		'container_class' => 'unysonplus-mega-menu-block',
+		'menu_class'      => 'primary-menu',
+		'fallback_cb'     => false,
+	));
+}
+
+/**
+ * Keep the classic Appearance → Menus screen (where mega menus are built) reachable everywhere,
+ * including block / FSE themes that would otherwise hide it. `menus` support is benign.
+ */
+add_action('after_setup_theme', function () {
+	add_theme_support('menus');
+}, 20);

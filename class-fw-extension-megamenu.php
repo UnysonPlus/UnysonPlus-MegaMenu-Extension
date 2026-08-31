@@ -49,6 +49,9 @@ class FW_Extension_Megamenu extends FW_Extension
 		add_action('wp_update_nav_menu_item', array($this, '_admin_action_wp_update_nav_menu_item'), 10, 3);
 		add_action('admin_enqueue_scripts', array($this, '_admin_action_admin_enqueue_scripts'));
 		add_action('wp_ajax_fw_ext_megamenu_item_values', array($this, '_action_ajax_item_values'));
+		add_action('wp_ajax_fw_ext_megamenu_export_layout', array($this, '_action_ajax_export_layout'));
+		add_action('wp_ajax_fw_ext_megamenu_import_layout', array($this, '_action_ajax_import_layout'));
+		add_action('wp_ajax_fw_ext_megamenu_preview_layout', array($this, '_action_ajax_preview_layout'));
 		add_filter('wp_edit_nav_menu_walker', array($this, '_admin_filter_wp_edit_nav_menu_walker'));
 	}
 
@@ -63,10 +66,17 @@ class FW_Extension_Megamenu extends FW_Extension
 
 		wp_enqueue_media(); // required for modal
 
+		// The baseline front-end CSS, so the "Preview" overlay renders the assembled panel styled.
+		wp_enqueue_style(
+			'fw-ext-megamenu',
+			$this->get_uri('/static/css/frontend.css'),
+			array(),
+			$this->manifest->get_version()
+		);
 		wp_enqueue_style(
 			"fw-ext-{$this->get_name()}-admin",
 			$this->get_uri('/static/css/admin.css'),
-			array(),
+			array('fw-ext-megamenu'),
 			$this->manifest->get_version()
 		);
 		wp_enqueue_script(
@@ -102,6 +112,16 @@ class FW_Extension_Megamenu extends FW_Extension
 				'l10n' => array(
 					/** Filters the label of the mega-menu item settings button shown in the admin menu editor. */
 					'item_options_btn' => apply_filters('fw:ext:megamenu:label:item-options-btn', __('Settings', 'fw')),
+					'ajax_error'       => __('Ajax Error', 'fw'),
+					'export_layout'    => __('Export layout', 'fw'),
+					'import_layout'    => __('Import layout', 'fw'),
+					'preview_layout'   => __('Preview', 'fw'),
+					'preview_title'    => __('Mega Menu preview', 'fw'),
+					'preview_close'    => __('Close', 'fw'),
+					'preview_fail'     => __('Preview failed.', 'fw'),
+					'import_done'      => __('Imported %d item(s). Reloading…', 'fw'),
+					'export_fail'      => __('Export failed.', 'fw'),
+					'import_fail'      => __('Import failed.', 'fw'),
 				),
 				'nonce' => wp_create_nonce('fw_ext_megamenu'),
 				'icon_option' => $icon_option,
@@ -222,5 +242,60 @@ class FW_Extension_Megamenu extends FW_Extension
 		wp_send_json_success(array(
 			'values' => fw_ext_mega_menu_get_db_item_option(intval(FW_Request::POST('id')))
 		));
+	}
+
+	/**
+	 * AJAX: export a mega item's layout (row options + child columns/items) as JSON.
+	 * @internal
+	 */
+	public function _action_ajax_export_layout() {
+		check_ajax_referer('fw_ext_megamenu', '_ajax_nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error();
+		}
+		$data = fw_ext_mega_menu_export_layout(intval(FW_Request::POST('id')));
+		if (!$data) {
+			wp_send_json_error(array('message' => __('Nothing to export — enable Mega Menu on this item and save first.', 'fw')));
+		}
+		wp_send_json_success(array(
+			'layout'   => $data,
+			'filename' => 'mega-menu-layout-' . intval(FW_Request::POST('id')) . '.json',
+		));
+	}
+
+	/**
+	 * AJAX: import a layout onto a menu item (re-creates the columns/items beneath it).
+	 * @internal
+	 */
+	public function _action_ajax_import_layout() {
+		check_ajax_referer('fw_ext_megamenu', '_ajax_nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error();
+		}
+		$data = json_decode(wp_unslash((string) FW_Request::POST('layout')), true);
+		if (!is_array($data)) {
+			wp_send_json_error(array('message' => __('Could not read the layout JSON.', 'fw')));
+		}
+		$res = fw_ext_mega_menu_import_layout($data, intval(FW_Request::POST('id')));
+		if (is_wp_error($res)) {
+			wp_send_json_error(array('message' => $res->get_error_message()));
+		}
+		wp_send_json_success(array('created' => (int) $res));
+	}
+
+	/**
+	 * AJAX: render a still preview of a mega item's assembled panel (saved state).
+	 * @internal
+	 */
+	public function _action_ajax_preview_layout() {
+		check_ajax_referer('fw_ext_megamenu', '_ajax_nonce');
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error();
+		}
+		$html = fw_ext_mega_menu_render_preview(intval(FW_Request::POST('id')));
+		if ($html === '') {
+			wp_send_json_error(array('message' => __('Nothing to preview yet — save the menu first.', 'fw')));
+		}
+		wp_send_json_success(array('html' => $html));
 	}
 }

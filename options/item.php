@@ -17,12 +17,19 @@ $fw_mm_color = function ($label, $kind = 'bg') {
 $options = array_merge(
 	// Icon + Icon Position (replaces the old standalone "Edit Icon" control).
 	fw_ext_mega_menu_icon_options(),
+	fw_ext_mega_menu_visibility_options(),
 
 	fw_ext_mega_menu_group('group_image', array(
 		'item_image' => array(
 			'type'  => 'upload',
 			'label' => __('Item Image', 'fw'),
 			'desc'  => __('Optional thumbnail shown beside the link (product / feature nav style).', 'fw'),
+			'value' => '',
+		),
+		'item_image_alt' => array(
+			'type'  => 'text',
+			'label' => __('Image Alt Text', 'fw'),
+			'desc'  => __('Describes the image for screen readers. Leave empty if the image is purely decorative (the link text already conveys the destination).', 'fw'),
 			'value' => '',
 		),
 	)),

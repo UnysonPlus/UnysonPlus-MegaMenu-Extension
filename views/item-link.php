@@ -7,6 +7,20 @@
  * @var int $depth
  */
 
+// A11y (WAI-ARIA disclosure): point an enabled top-level mega trigger at its panel
+// (the walker renders the panel with a matching id="mega-menu-panel-{ID}"). Only when
+// the item actually has children (and therefore a panel), to avoid a dangling reference.
+if (
+	$depth === 0
+	&& fw_ext_mega_menu_get_meta($item, 'enabled')
+	&& !empty($item->classes)
+	&& in_array('menu-item-has-children', (array) $item->classes, true)
+) {
+	$attributes['aria-controls'] = 'mega-menu-panel-' . (int) $item->ID;
+	if (empty($attributes['aria-haspopup']))       { $attributes['aria-haspopup'] = 'true'; }
+	if (!array_key_exists('aria-expanded', $attributes)) { $attributes['aria-expanded'] = 'false'; }
+}
+
 // Icon — from the per-item "Settings" option (icon-v2), or the legacy Edit-Icon
 // meta as a fallback. Rendered as an element INSIDE the link (so the icon font
 // never clobbers the link text). Position (left / right / stacked-left) comes
@@ -23,7 +37,9 @@ if ($depth > 0) {
 	$mm_img = fw_ext_mega_menu_get_item_option($item, 'item', 'item_image', '');
 	$mm_img_url = is_array($mm_img) ? (isset($mm_img['url']) ? $mm_img['url'] : '') : $mm_img;
 	if ($mm_img_url) {
-		$mm_item_media = '<img class="mega-menu-item-img" src="' . esc_url($mm_img_url) . '" alt="" />';
+		// Author-controllable alt text (empty = decorative, correct when the link text carries meaning).
+		$mm_img_alt = trim((string) fw_ext_mega_menu_get_item_option($item, 'item', 'item_image_alt', ''));
+		$mm_item_media = '<img class="mega-menu-item-img" src="' . esc_url($mm_img_url) . '" alt="' . esc_attr($mm_img_alt) . '" />';
 	}
 
 	$mm_sub = trim((string) fw_ext_mega_menu_get_item_option($item, 'item', 'item_subtitle', ''));
