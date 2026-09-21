@@ -198,13 +198,36 @@
 .mega-menu .mega-menu-col > .sub-menu > li + li {
 	margin-top: var(--mm-item-gap, 0);
 }
-/* Item description (from the menu item's Description field). Smaller + muted by
-   default so it reads as secondary text beneath the link. */
-.mega-menu .mega-menu-desc {
-	font-size: var(--mm-desc-size, 0.85em);
-	color: var(--mm-desc-color, inherit);
-	opacity: 0.85;
+/* Item links are a BLOCK (label over description) and never inherit the top-level
+   nav's uppercase / tracking / inline-flex — a panel of tracked capitals with the
+   description hanging outside the link's inset read as misaligned. The tokens keep
+   the theme's "Header → Mega Menu" item settings in charge. */
+.mega-menu .mega-menu-col > .sub-menu > .menu-item > a {
+	display: block;
+	text-transform: var(--mm-item-transform, none);
+	letter-spacing: var(--mm-item-spacing, normal);
+	font-weight: var(--mm-item-weight, 500);
+	line-height: 1.35;
+	padding: var(--mm-item-pad, 0.5rem 1rem);
+	border-radius: var(--mm-item-radius, 4px);
 }
+.mega-menu .mega-menu-col > .sub-menu > .menu-item > a .mega-menu-label { display: block; }
+/* Item description (from the menu item's Description field). Smaller + muted by
+   default so it reads as secondary text beneath the link — inside the link, so it
+   shares the label's inset and hit area. */
+.mega-menu .mega-menu-desc {
+	display: block;
+	margin-top: 2px;
+	font-size: var(--mm-desc-size, 0.85em);
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+	line-height: 1.45;
+	color: var(--mm-desc-color, inherit);
+	opacity: 0.75;
+}
+/* Legacy sibling <div> (a theme that overrides the walker) keeps the link's inset. */
+.mega-menu .mega-menu-col > .sub-menu > .menu-item > div.mega-menu-desc { padding: 0 1rem 0.5rem; margin-top: -0.35rem; }
 
 /* Column width presets (mm-col-<width> from the "Settings" modal).
    Widths are GAP-AWARE: for a fraction a/b in a b-slot row with gap G, the exact

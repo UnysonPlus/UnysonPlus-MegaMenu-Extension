@@ -165,7 +165,20 @@ function _filter_fw_ext_mega_menu_walker_nav_menu_start_el($item_output, $item, 
 	// Note that raw description is stored in post_content field.
 	$post_content = (string) $item->post_content;
 	if ($depth > 0 && trim($post_content) !== '') {
-		$item_output .= '<div class="mega-menu-desc">' . do_shortcode($post_content) . '</div>';
+		// The description rides INSIDE the item's own <a> (a block link: label over description) so the
+		// theme's dropdown-link padding boxes label + description together. As a sibling <div> after the
+		// anchor it sat flush left while the label carried the link's 1rem inset — the two lines never
+		// aligned, and the item had no hit area over its description.
+		$desc_html = '<span class="mega-menu-desc">' . do_shortcode($post_content) . '</span>';
+		$a_close   = strrpos($item_output, '</a>');
+		if ($a_close !== false) {
+			$label = substr($item_output, 0, $a_close);
+			// wrap the bare label text in a span so the two lines stack cleanly
+			if (preg_match('/^(.*<a[\s>][^>]*>|.*<a>)(.*)$/s', $label, $lm)) { $label = $lm[1] . '<span class="mega-menu-label">' . $lm[2] . '</span>'; }
+			$item_output = $label . $desc_html . substr($item_output, $a_close);
+		} else {
+			$item_output .= '<div class="mega-menu-desc">' . do_shortcode($post_content) . '</div>';
+		}
 	}
 
 	// Column content types (image / rich content / widget / raw). A column is a
