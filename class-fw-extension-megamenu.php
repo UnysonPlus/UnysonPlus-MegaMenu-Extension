@@ -46,6 +46,9 @@ class FW_Extension_Megamenu extends FW_Extension
 	 * @internal
 	 */
 	public function _init() {
+		// AI Assistant abilities (only registered while that extension is active).
+		require_once dirname( __FILE__ ) . '/includes/ai-abilities.php';
+
 		add_action('wp_update_nav_menu_item', array($this, '_admin_action_wp_update_nav_menu_item'), 10, 3);
 		add_action('admin_enqueue_scripts', array($this, '_admin_action_admin_enqueue_scripts'));
 		add_action('wp_ajax_fw_ext_megamenu_item_values', array($this, '_action_ajax_item_values'));

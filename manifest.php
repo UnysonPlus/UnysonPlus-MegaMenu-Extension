@@ -5,6 +5,13 @@
 /**
  * Changelog ----------------------------------------------------------------
  *
+ * 1.1.44 - AI Assistant abilities. With the AI Assistant extension active, the AI can
+ *         work with menus: menus-list, menus-create, menus-add-items, menus-assign, menus-remove-item and
+ *         megamenu-set-item (turn a top item into a mega menu, set row / column /
+ *         item options validated against options/*.php) — undoable through undo_change / page revisions.
+ *         See includes/ai-abilities.php.
+ *
+ *
  * 1.1.21 - Icon moved into the per-item "Settings" modal + icon positions.
  *          The standalone "Add/Edit Icon" control (its own bare one-option
  *          modal) is retired; the icon is now an icon-v2 option inside the
@@ -62,7 +69,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.1.43';
+$manifest['version']     = '1.1.44';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 
