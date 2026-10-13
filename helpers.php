@@ -422,7 +422,7 @@ function fw_ext_mega_menu_render_column_content($item, $type) {
 			$pt    = (string) fw_ext_mega_menu_get_item_option($id, 'column', 'posts_post_type', 'post');
 			$count = (int) fw_ext_mega_menu_get_item_option($id, 'column', 'posts_count', 5);
 			$order = (string) fw_ext_mega_menu_get_item_option($id, 'column', 'posts_orderby', 'date');
-			$thumb = fw_ext_mega_menu_get_item_option($id, 'column', 'posts_thumb', 'yes') === 'yes';
+			$thumb = in_array(fw_ext_mega_menu_get_item_option($id, 'column', 'posts_thumb', 'yes'), array('yes', true), true); // true = saved before the switch had yes/no choices
 			if ($count < 1) { $count = 5; }
 			if (!post_type_exists($pt)) { $pt = 'post'; }
 			$order = in_array($order, array('date', 'title', 'rand', 'menu_order'), true) ? $order : 'date';

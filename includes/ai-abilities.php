@@ -225,7 +225,7 @@ if ( ! function_exists( 'fw_ext_megamenu_ai_register' ) ) :
 				if ( ! empty( $in['location'] ) ) {
 					$spec['options'] = array( fw_ext_megamenu_ai_mods_option() );
 				}
-				$rev     = fw_ai_snapshot( $spec, 'unysonplus/menus-create', sprintf( 'Created menu "%s"', $name ) );
+				$rev     = ! function_exists( 'fw_ai_snapshot' ) ? 0 : fw_ai_snapshot( $spec, 'unysonplus/menus-create', sprintf( 'Created menu "%s"', $name ) );
 				$created = array();
 				$r       = fw_ext_megamenu_ai_add( $menu_id, (array) $in['items'], 0, $created );
 				if ( is_wp_error( $r ) ) {
@@ -269,7 +269,7 @@ if ( ! function_exists( 'fw_ext_megamenu_ai_register' ) ) :
 				}
 				$created = array();
 				$r       = fw_ext_megamenu_ai_add( $menu_id, (array) $in['items'], $parent, $created );
-				$rev     = fw_ai_snapshot( array( 'created_posts' => $created ), 'unysonplus/menus-add-items', sprintf( 'Added %d item(s) to menu %d', count( $created ), $menu_id ) );
+				$rev     = ! function_exists( 'fw_ai_snapshot' ) ? 0 : fw_ai_snapshot( array( 'created_posts' => $created ), 'unysonplus/menus-add-items', sprintf( 'Added %d item(s) to menu %d', count( $created ), $menu_id ) );
 				if ( is_wp_error( $r ) ) {
 					return $r;
 				}
@@ -297,7 +297,7 @@ if ( ! function_exists( 'fw_ext_megamenu_ai_register' ) ) :
 				if ( ! is_nav_menu( (int) $in['menu_id'] ) ) {
 					return new WP_Error( 'fw_mm_ai_menu', 'No menu with that menu_id.' );
 				}
-				$rev = fw_ai_snapshot( array( 'options' => array( fw_ext_megamenu_ai_mods_option() ) ), 'unysonplus/menus-assign', sprintf( 'Put menu %d in location %s', (int) $in['menu_id'], $in['location'] ) );
+				$rev = ! function_exists( 'fw_ai_snapshot' ) ? 0 : fw_ai_snapshot( array( 'options' => array( fw_ext_megamenu_ai_mods_option() ) ), 'unysonplus/menus-assign', sprintf( 'Put menu %d in location %s', (int) $in['menu_id'], $in['location'] ) );
 				$r   = fw_ext_megamenu_ai_assign( (int) $in['menu_id'], (string) $in['location'] );
 				if ( is_wp_error( $r ) ) {
 					return $r;
@@ -326,7 +326,7 @@ if ( ! function_exists( 'fw_ext_megamenu_ai_register' ) ) :
 					$ids   = array_merge( $ids, $kids );
 					$queue = array_merge( $queue, $kids );
 				}
-				$rev = fw_ai_snapshot( array( 'trashed_posts' => $ids ), 'unysonplus/menus-remove-item', sprintf( 'Removed menu item "%s"', get_the_title( $id ) ) );
+				$rev = ! function_exists( 'fw_ai_snapshot' ) ? 0 : fw_ai_snapshot( array( 'trashed_posts' => $ids ), 'unysonplus/menus-remove-item', sprintf( 'Removed menu item "%s"', get_the_title( $id ) ) );
 				foreach ( $ids as $pid ) {
 					wp_trash_post( $pid );
 				}
@@ -397,7 +397,7 @@ if ( ! function_exists( 'fw_ext_megamenu_ai_register' ) ) :
 		}
 
 		$meta_name = class_exists( 'FW_Db_Options_Model_MegaMenu' ) ? FW_Db_Options_Model_MegaMenu::get_meta_name() : '';
-		$rev       = fw_ai_snapshot( array( 'post_meta' => array( $id => array_filter( array( 'mega-menu', $meta_name ) ) ) ), 'unysonplus/megamenu-set-item', sprintf( 'Mega-menu settings on "%s"', get_the_title( $id ) ) );
+		$rev       = ! function_exists( 'fw_ai_snapshot' ) ? 0 : fw_ai_snapshot( array( 'post_meta' => array( $id => array_filter( array( 'mega-menu', $meta_name ) ) ) ), 'unysonplus/megamenu-set-item', sprintf( 'Mega-menu settings on "%s"', get_the_title( $id ) ) );
 
 		$flags = array();
 		if ( isset( $in['enabled'] ) ) {

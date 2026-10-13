@@ -253,6 +253,7 @@ $options = array_merge(
 		),
 		'posts_thumb' => array(
 			'type' => 'switch', 'label' => __('Show Thumbnail', 'fw'), 'value' => 'yes',
+			'left-choice' => array('value' => 'no', 'label' => __('No', 'fw')), 'right-choice' => array('value' => 'yes', 'label' => __('Yes', 'fw')),
 			'show_if' => array('content_type' => 'posts'),
 		),
 	)),
